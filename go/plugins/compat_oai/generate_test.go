@@ -217,10 +217,11 @@ func TestWithMessagesSkipsNilMessagesAndParts(t *testing.T) {
 
 func TestWithConfigPreservesProviderSpecificFields(t *testing.T) {
 	g := newGen().WithConfig(map[string]any{
-		"maxOutputTokens": 123,
-		"model":           "must-not-override",
-		"temperature":     0.3,
-		"topP":            0.8,
+		"maxOutputTokens":        123,
+		"model":                  "must-not-override",
+		"prompt_cache_retention": "24h",
+		"temperature":            0.3,
+		"topP":                   0.8,
 		"thinking": map[string]any{
 			"type":           "enabled",
 			"clear_thinking": false,
@@ -240,6 +241,9 @@ func TestWithConfigPreservesProviderSpecificFields(t *testing.T) {
 	}
 	if got := request["model"]; got != "test-model" {
 		t.Errorf("model = %v, want %q", got, "test-model")
+	}
+	if got := request["prompt_cache_retention"]; got != "24h" {
+		t.Errorf("prompt_cache_retention = %v, want %q", got, "24h")
 	}
 	if got := request["temperature"]; got != 0.3 {
 		t.Errorf("temperature = %v, want 0.3", got)
