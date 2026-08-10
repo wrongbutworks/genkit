@@ -62,6 +62,7 @@ from genkit._core._middleware import (
 from genkit._core._model import (
     Document,
     GenerateActionOptions,
+    OutputConfig,
 )
 from genkit._core._protocols import RegistryLike, SessionLike
 from genkit._core._registry import Registry
@@ -1155,10 +1156,12 @@ async def action_to_generate_request(
         docs=options.docs if options.docs else None,  # type: ignore[arg-type]
         tools=tool_defs,
         tool_choice=options.tool_choice,
-        output_format=output.format if output else None,
-        output_schema=out_schema,
-        output_constrained=output.constrained if output else None,
-        output_content_type=output.content_type if output else None,
+        output=OutputConfig(
+            format=output.format if output else None,
+            schema_=out_schema,
+            constrained=output.constrained if output else None,
+            content_type=output.content_type if output else None,
+        ),
     )
 
 

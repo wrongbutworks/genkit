@@ -31,7 +31,7 @@ from genkit._ai._testing import (
     define_programmable_model,
 )
 from genkit._core._action import ActionKind, ActionRunContext
-from genkit._core._model import ModelRequest
+from genkit._core._model import ModelRequest, OutputConfig
 from genkit._core._typing import (
     BaseDataPoint,
     Details,
@@ -854,10 +854,12 @@ async def test_generate_with_output(setup_test: SetupFixture) -> None:
         ],
         config={},  # type: ignore[arg-type]
         tools=[],
-        output_format='json',
-        output_schema=_schema,
-        output_constrained=True,
-        output_content_type='application/json',
+        output=OutputConfig(
+            format='json',
+            schema_=_schema,
+            constrained=True,
+            content_type='application/json',
+        ),
     )
 
     response = await ai.generate(
@@ -920,11 +922,13 @@ async def test_generate_defaults_to_json_format(
         ],
         config={},  # type: ignore[arg-type]
         tools=[],
-        output_format='json',
-        output_schema=_schema,
-        # these get populated by the format
-        output_constrained=True,
-        output_content_type='application/json',
+        output=OutputConfig(
+            format='json',
+            schema_=_schema,
+            # these get populated by the format
+            constrained=True,
+            content_type='application/json',
+        ),
     )
 
     response = await ai.generate(
@@ -961,27 +965,29 @@ async def test_generate_json_format_unconstrained(
         ],
         config={},  # type: ignore[arg-type]
         tools=[],
-        output_format='json',
-        output_schema={
-            'properties': {
-                'foo': {
-                    'anyOf': [{'type': 'integer'}, {'type': 'null'}],
-                    'default': None,
-                    'description': 'foo field',
-                    'title': 'Foo',
+        output=OutputConfig(
+            format='json',
+            schema_={
+                'properties': {
+                    'foo': {
+                        'anyOf': [{'type': 'integer'}, {'type': 'null'}],
+                        'default': None,
+                        'description': 'foo field',
+                        'title': 'Foo',
+                    },
+                    'bar': {
+                        'anyOf': [{'type': 'string'}, {'type': 'null'}],
+                        'default': None,
+                        'description': 'bar field',
+                        'title': 'Bar',
+                    },
                 },
-                'bar': {
-                    'anyOf': [{'type': 'string'}, {'type': 'null'}],
-                    'default': None,
-                    'description': 'bar field',
-                    'title': 'Bar',
-                },
+                'title': 'TestSchema',
+                'type': 'object',
             },
-            'title': 'TestSchema',
-            'type': 'object',
-        },
-        output_constrained=False,
-        output_content_type='application/json',
+            constrained=False,
+            content_type='application/json',
+        ),
     )
 
     response = await ai.generate(
@@ -1239,27 +1245,29 @@ async def test_generate_json_format_unconstrained_with_instructions(
         ],
         config={},  # type: ignore[arg-type]
         tools=[],
-        output_format='json',
-        output_schema={
-            'properties': {
-                'foo': {
-                    'anyOf': [{'type': 'integer'}, {'type': 'null'}],
-                    'default': None,
-                    'description': 'foo field',
-                    'title': 'Foo',
+        output=OutputConfig(
+            format='json',
+            schema_={
+                'properties': {
+                    'foo': {
+                        'anyOf': [{'type': 'integer'}, {'type': 'null'}],
+                        'default': None,
+                        'description': 'foo field',
+                        'title': 'Foo',
+                    },
+                    'bar': {
+                        'anyOf': [{'type': 'string'}, {'type': 'null'}],
+                        'default': None,
+                        'description': 'bar field',
+                        'title': 'Bar',
+                    },
                 },
-                'bar': {
-                    'anyOf': [{'type': 'string'}, {'type': 'null'}],
-                    'default': None,
-                    'description': 'bar field',
-                    'title': 'Bar',
-                },
+                'title': 'TestSchema',
+                'type': 'object',
             },
-            'title': 'TestSchema',
-            'type': 'object',
-        },
-        output_constrained=False,
-        output_content_type='application/json',
+            constrained=False,
+            content_type='application/json',
+        ),
     )
 
     response = await ai.generate(
@@ -1479,27 +1487,29 @@ async def test_define_format(setup_test: SetupFixture) -> None:
         ],
         config={},  # type: ignore[arg-type]
         tools=[],
-        output_format='json',
-        output_schema={
-            'properties': {
-                'foo': {
-                    'anyOf': [{'type': 'integer'}, {'type': 'null'}],
-                    'default': None,
-                    'description': 'foo field',
-                    'title': 'Foo',
+        output=OutputConfig(
+            format='json',
+            schema_={
+                'properties': {
+                    'foo': {
+                        'anyOf': [{'type': 'integer'}, {'type': 'null'}],
+                        'default': None,
+                        'description': 'foo field',
+                        'title': 'Foo',
+                    },
+                    'bar': {
+                        'anyOf': [{'type': 'string'}, {'type': 'null'}],
+                        'default': None,
+                        'description': 'bar field',
+                        'title': 'Bar',
+                    },
                 },
-                'bar': {
-                    'anyOf': [{'type': 'string'}, {'type': 'null'}],
-                    'default': None,
-                    'description': 'bar field',
-                    'title': 'Bar',
-                },
+                'title': 'TestSchema',
+                'type': 'object',
             },
-            'title': 'TestSchema',
-            'type': 'object',
-        },
-        output_constrained=True,
-        output_content_type='application/banana',
+            constrained=True,
+            content_type='application/banana',
+        ),
     )
 
 
