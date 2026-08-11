@@ -50,11 +50,11 @@ def test_wire_roundtrip_preserves_output_fields() -> None:
 
 
 def test_output_always_present_on_wire() -> None:
-    """Built requests always include an output object, even when empty.
+    """A built request always includes an output object, even when empty.
 
-    generate() always sends an output block so plugins see a consistent
-    shape. An empty ``{}`` means nothing was configured — not that the key
-    was omitted.
+    This matches how the JS SDK's generate path builds requests: an output
+    object is always present (empty when no output options are set), even
+    though the wire schema marks the field optional for hand-built requests.
     """
     req = ModelRequest[CarrierCfg](messages=[])
     assert req.model_dump(mode='python')['output'] == {}
