@@ -11,6 +11,12 @@ from pydantic import BaseModel, ValidationError
 from genkit._core._model import ModelRequest, OutputConfig
 
 
+class CarrierCfg(BaseModel):
+    """Permissive stand-in for the sending side of a cross-typed handoff."""
+
+    model_config = {'extra': 'allow'}
+
+
 class PluginCfg(BaseModel):
     """Stand-in for a plugin config schema."""
 
@@ -19,7 +25,7 @@ class PluginCfg(BaseModel):
 
 def test_wire_roundtrip_preserves_output_fields() -> None:
     """dump -> validate must be an identity for the output settings."""
-    req = ModelRequest[dict](
+    req = ModelRequest[CarrierCfg](
         messages=[],
         config={'temperature': 0.5},
         output=OutputConfig(
@@ -36,7 +42,7 @@ def test_wire_roundtrip_preserves_output_fields() -> None:
         'contentType': 'application/json',
         'schema': {'type': 'object'},
     }
-    reparsed = ModelRequest[dict].model_validate(dumped)
+    reparsed = ModelRequest[CarrierCfg].model_validate(dumped)
     assert reparsed.output_format == 'json'
     assert reparsed.output_constrained is True
     assert reparsed.output_content_type == 'application/json'
@@ -45,13 +51,13 @@ def test_wire_roundtrip_preserves_output_fields() -> None:
 
 def test_output_always_present_on_wire() -> None:
     """Spec: the output key is always emitted, even when empty."""
-    req = ModelRequest[dict](messages=[])
+    req = ModelRequest[CarrierCfg](messages=[])
     assert req.model_dump(mode='python')['output'] == {}
 
 
 def test_cross_config_revalidation_preserves_output() -> None:
-    """The _validate_input fallback scenario: ModelRequest[dict] -> ModelRequest[PluginCfg]."""
-    req = ModelRequest[dict](
+    """The _validate_input fallback scenario: ModelRequest[CarrierCfg] -> ModelRequest[PluginCfg]."""
+    req = ModelRequest[CarrierCfg](
         messages=[],
         config={'temperature': 0.5},
         output=OutputConfig(format='json', constrained=True),
@@ -66,7 +72,7 @@ def test_cross_config_revalidation_preserves_output() -> None:
 
 def test_flat_properties_read_and_write_nested_storage() -> None:
     """The flat accessors are a live view over output (plugin tests mutate them)."""
-    req = ModelRequest[dict](messages=[])
+    req = ModelRequest[CarrierCfg](messages=[])
     req.output_format = 'json'
     req.output_schema = {'type': 'integer'}
     assert req.output.format == 'json'
@@ -77,4 +83,4 @@ def test_flat_properties_read_and_write_nested_storage() -> None:
 def test_bad_config_type_raises_validation_error() -> None:
     """Wrong config type must surface as ValidationError, never bare TypeError."""
     with pytest.raises(ValidationError):
-        ModelRequest[dict](messages=[], config=5)  # type: ignore[arg-type]
+        ModelRequest[CarrierCfg](messages=[], config=5)  # type: ignore[arg-type]

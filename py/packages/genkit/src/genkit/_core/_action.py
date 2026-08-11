@@ -472,6 +472,11 @@ class Action(Generic[InputT, OutputT, ChunkT, InitT]):
         return self._input_type
 
     @property
+    def input_class(self) -> type | None:
+        """The action's input annotation as a concrete class, when it is one."""
+        return getattr(self, '_input_class', None)
+
+    @property
     def input_schema(self) -> dict[str, object]:
         return self._input_schema
 
@@ -626,10 +631,12 @@ class Action(Generic[InputT, OutputT, ChunkT, InitT]):
             type_adapter = TypeAdapter(arg_types[0])
             self._input_schema: dict[str, object] = type_adapter.json_schema()
             self._input_type: TypeAdapter[InputT] | None = cast(TypeAdapter[InputT], type_adapter)
+            self._input_class: type | None = arg_types[0] if isinstance(arg_types[0], type) else None
             self._metadata[ActionMetadataKey.INPUT_KEY] = self._input_schema
         else:
             self._input_schema = TypeAdapter(object).json_schema()
             self._input_type = None
+            self._input_class = None
             self._metadata[ActionMetadataKey.INPUT_KEY] = self._input_schema
 
         if ActionMetadataKey.RETURN in annotations:
