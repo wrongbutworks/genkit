@@ -26,7 +26,7 @@ def test_wire_roundtrip_preserves_output_fields() -> None:
             format='json',
             constrained=True,
             content_type='application/json',
-            schema_={'type': 'object'},
+            json_schema={'type': 'object'},
         ),
     )
     dumped = req.model_dump(mode='python')
@@ -70,7 +70,7 @@ def test_flat_properties_read_and_write_nested_storage() -> None:
     req.output_format = 'json'
     req.output_schema = {'type': 'integer'}
     assert req.output.format == 'json'
-    assert req.output.schema_ == {'type': 'integer'}
+    assert req.output.json_schema == {'type': 'integer'}
     assert req.model_dump(mode='python')['output']['schema'] == {'type': 'integer'}
 
 

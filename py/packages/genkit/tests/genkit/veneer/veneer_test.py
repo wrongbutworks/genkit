@@ -856,7 +856,7 @@ async def test_generate_with_output(setup_test: SetupFixture) -> None:
         tools=[],
         output=OutputConfig(
             format='json',
-            schema_=_schema,
+            json_schema=_schema,
             constrained=True,
             content_type='application/json',
         ),
@@ -924,7 +924,7 @@ async def test_generate_defaults_to_json_format(
         tools=[],
         output=OutputConfig(
             format='json',
-            schema_=_schema,
+            json_schema=_schema,
             # these get populated by the format
             constrained=True,
             content_type='application/json',
@@ -967,7 +967,7 @@ async def test_generate_json_format_unconstrained(
         tools=[],
         output=OutputConfig(
             format='json',
-            schema_={
+            json_schema={
                 'properties': {
                     'foo': {
                         'anyOf': [{'type': 'integer'}, {'type': 'null'}],
@@ -1247,7 +1247,7 @@ async def test_generate_json_format_unconstrained_with_instructions(
         tools=[],
         output=OutputConfig(
             format='json',
-            schema_={
+            json_schema={
                 'properties': {
                     'foo': {
                         'anyOf': [{'type': 'integer'}, {'type': 'null'}],
@@ -1489,7 +1489,7 @@ async def test_define_format(setup_test: SetupFixture) -> None:
         tools=[],
         output=OutputConfig(
             format='json',
-            schema_={
+            json_schema={
                 'properties': {
                     'foo': {
                         'anyOf': [{'type': 'integer'}, {'type': 'null'}],

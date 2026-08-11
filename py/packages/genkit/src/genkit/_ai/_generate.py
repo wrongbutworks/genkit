@@ -1158,7 +1158,7 @@ async def action_to_generate_request(
         tool_choice=options.tool_choice,
         output=OutputConfig(
             format=output.format if output else None,
-            schema_=out_schema,
+            json_schema=out_schema,
             constrained=output.constrained if output else None,
             content_type=output.content_type if output else None,
         ),

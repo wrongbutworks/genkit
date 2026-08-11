@@ -46,7 +46,7 @@ class ArrayFormat(FormatDef):
         ai.generate(
             output=OutputConfig(
                 format='array',
-                schema={
+                json_schema={
                     'type': 'array',
                     'items': {
                         'type': 'object',

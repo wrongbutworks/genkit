@@ -43,7 +43,7 @@ class EnumFormat(FormatDef):
         ai.generate(
             output=OutputConfig(
                 format='enum',
-                schema={
+                json_schema={
                     'type': 'string',
                     'enum': ['positive', 'negative', 'neutral']
                 }

@@ -229,22 +229,17 @@ class Document(DocumentData):
 class OutputConfig(OutputConfigData):
     """Output settings veneer over the generated OutputConfig.
 
-    Overrides ``schema_`` with an explicit ``schema`` alias: the alias
-    generator would otherwise emit the wire key ``schema_`` (trailing
-    underscore), which neither matches the spec nor round-trips.
+    Callers construct with ``json_schema=``; the wire key stays ``schema``.
     """
-
-    schema_: dict[str, Any] | None = Field(default=None, alias='schema')
 
 
 class ModelRequest(GenkitModel, Generic[ModelRequestConfigT]):
     """Hand-written model request with veneer types and flat output accessors.
 
-    Output settings are stored wire-shaped as a nested ``output: OutputConfig``
-    (so dump/validate round-trips natively, matching the JS SDK and the spec),
-    with flat read/write properties (``output_format`` etc.) preserved as the
-    plugin-author convenience surface. Messages and docs use veneer types
-    (Message, Document) for convenience methods like .text.
+    Output settings live nested as ``output: OutputConfig`` so dump/validate
+    round-trips the wire shape, while flat properties (``output_format`` etc.)
+    stay the plugin-author convenience surface. Messages and docs use veneer
+    types (Message, Document) for helpers like ``.text``.
 
     Example:
         class GeminiConfig(ModelConfig):
@@ -309,12 +304,12 @@ class ModelRequest(GenkitModel, Generic[ModelRequestConfigT]):
 
     @property
     def output_schema(self) -> dict[str, Any] | None:
-        """Output JSON schema; reads ``output.schema_``."""
-        return self.output.schema_
+        """Output JSON schema; reads ``output.json_schema``."""
+        return self.output.json_schema
 
     @output_schema.setter
     def output_schema(self, v: dict[str, Any] | None) -> None:
-        self.output.schema_ = v
+        self.output.json_schema = v
 
     @property
     def output_constrained(self) -> bool | None:
