@@ -75,18 +75,6 @@ def test_dict_and_any_parametrizations_allowed_unblessed(ai: Genkit) -> None:
     ai.define_model(name='param_any', fn=fn_a)
 
 
-def test_model_request_subclass_allowed(ai: Genkit) -> None:
-    """issubclass rule: hand-written ModelRequest subclasses pass."""
-
-    class MyRequest(ModelRequest[Cfg]):
-        pass
-
-    async def fn(request: MyRequest, ctx: ActionRunContext) -> ModelResponse:
-        return OK
-
-    ai.define_model(name='subclass', fn=fn)
-
-
 # --- rejected antipatterns ----------------------------------------------------
 
 

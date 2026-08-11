@@ -50,7 +50,12 @@ def test_wire_roundtrip_preserves_output_fields() -> None:
 
 
 def test_output_always_present_on_wire() -> None:
-    """Spec: the output key is always emitted, even when empty."""
+    """Built requests always include an output object, even when empty.
+
+    generate() always sends an output block so plugins see a consistent
+    shape. An empty ``{}`` means nothing was configured — not that the key
+    was omitted.
+    """
     req = ModelRequest[CarrierCfg](messages=[])
     assert req.model_dump(mode='python')['output'] == {}
 

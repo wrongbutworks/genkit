@@ -101,6 +101,9 @@ def _check_request_annotation(name: str, fn: ModelFn) -> None:
         return  # unannotated stays allowed
     if get_origin(ann) is Annotated:
         ann = get_args(ann)[0]
+    # Hand-written ModelRequest subclasses also pass this check. That is
+    # incidental — generate() only builds bare ModelRequest and
+    # ModelRequest[Config], so subclassing is not a supported surface.
     if isinstance(ann, type) and issubclass(ann, ModelRequest):
         return
     raise GenkitError(

@@ -227,9 +227,11 @@ class Document(DocumentData):
 
 
 class OutputConfig(OutputConfigData):
-    """Output settings veneer over the generated OutputConfig.
+    """Output settings for a model request.
 
-    Callers construct with ``json_schema=``; the wire key stays ``schema``.
+    Construct with ``json_schema=``; the serialized key on the wire is
+    ``schema``. This is the class to import and construct from hand-written
+    code.
     """
 
 
@@ -251,6 +253,12 @@ class ModelRequest(GenkitModel, Generic[ModelRequestConfigT]):
                 print(msg.text)  # Message veneer property
             if request.output_format == 'json':
                 schema = request.output_schema
+
+    Note:
+        Pass output settings as ``output=OutputConfig(...)``. The flat
+        names (``output_format`` etc.) are convenience properties you read
+        and write after construction — they are not constructor arguments,
+        so passing them there leaves output unset.
     """
 
     model_config: ClassVar[ConfigDict] = ConfigDict(alias_generator=to_camel, extra='allow', populate_by_name=True)
