@@ -9,8 +9,9 @@ embeddings, image generation, and reranking through InvokeModel.
 > generation, and reranking are available, which covers every surface of the
 > mature Go plugin
 > ([genkit-ai/aws-bedrock-go-plugin](https://github.com/genkit-ai/aws-bedrock-go-plugin)).
-> A runnable sample app covers all of it, so the work left is docsite coverage,
-> not plugin surfaces.
+> A runnable sample app covers all of it, and the plugin is documented on the
+> Genkit docsite at
+> [genkit.dev/docs/python/integrations/aws-bedrock](https://genkit.dev/docs/python/integrations/aws-bedrock/).
 
 ## Installation
 
