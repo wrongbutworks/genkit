@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strconv"
 
-	pluginjsonschema "github.com/firebase/genkit/go/plugins/internal/jsonschema"
+	"github.com/firebase/genkit/go/plugins/internal/jsonschema"
 	"google.golang.org/genai"
 )
 
@@ -25,7 +25,7 @@ func toGeminiSchema(originalSchema map[string]any, genkitSchema map[string]any) 
 		if !ok {
 			return nil, fmt.Errorf("invalid $ref value: not a string")
 		}
-		s, err := pluginjsonschema.ResolveRef(originalSchema, ref)
+		s, err := schemautil.ResolveRef(originalSchema, ref)
 		if err != nil {
 			return nil, err
 		}
