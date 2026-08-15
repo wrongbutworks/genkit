@@ -698,15 +698,6 @@ def coerce_prompt_template_input(template_input: Any) -> dict[str, Any]:  # noqa
     return cast(dict[str, Any], template_input)
 
 
-def resume_from_prompt_call_opts(opts: PromptGenerateOptions) -> Resume | None:
-    """Build a Resume from flat resume_respond / resume_restart / resume_metadata kwargs."""
-    return resume_options_to_resume(
-        resume_respond=opts.get('resume_respond'),
-        resume_restart=opts.get('resume_restart'),
-        resume_metadata=opts.get('resume_metadata'),
-    )
-
-
 async def to_generate_request(registry: Registry, options: GenerateActionOptions) -> ModelRequest:
     """Convert GenerateActionOptions to ModelRequest, resolving tool names."""
     tools: list[Action] = []
@@ -954,7 +945,6 @@ async def render_prompt_config_for_executable_call(
     if extra_docs:
         merged_docs = [*merged_docs, *extra_docs] if merged_docs else list(extra_docs)
 
-    resume = resume_from_prompt_call_opts(opts)
     # Copy instead of dump/revalidate so a typed config object the caller
     # passed through (no merge) is still that object when the plugin runs.
     return prompt_config.model_copy(
@@ -963,7 +953,6 @@ async def render_prompt_config_for_executable_call(
             'prompt': None,
             'messages': resolved_msgs,
             'docs': merged_docs,
-            'resume': resume,
         }
     )
 
