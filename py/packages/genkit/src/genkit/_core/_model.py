@@ -88,7 +88,12 @@ ModelRefConfigT = TypeVar('ModelRefConfigT', bound=BaseModel, covariant=True)
 
 @dataclass(frozen=True, kw_only=True)
 class ModelRef(Generic[ModelRefConfigT]):
-    """Frozen reference to a model tied to a config schema."""
+    """Handle for a model tied to a config schema.
+
+    Fields cannot be rebound. config and info are copied at construction so later
+    mutations of the caller's objects don't change the ref; the copies themselves
+    stay ordinary mutable Pydantic models.
+    """
 
     name: str
     config_schema: type[ModelRefConfigT]
@@ -101,14 +106,38 @@ class ModelRef(Generic[ModelRefConfigT]):
     __hash__ = None  # type: ignore[assignment]
 
     def __post_init__(self) -> None:
-        # Catch dicts / wrong types at construction so plugins don't discover
-        # the mismatch later when they touch typed config fields.
-        if self.config is not None and not isinstance(self.config, self.config_schema):
-            config_type = type(self.config).__name__
+        # If config_schema is not a BaseModel subclass, raise an error.
+        schema = self.config_schema
+        if not isinstance(schema, type) or not issubclass(schema, BaseModel):
+            got = (
+                f'{schema.__module__}.{schema.__name__}'
+                if isinstance(schema, type)
+                else f'{type(schema).__module__}.{type(schema).__name__}'
+            )
             raise GenkitError(
                 status='INVALID_ARGUMENT',
-                message=f'config must be an instance of {self.config_schema.__name__}, got {config_type}',
+                message=f'{self.name}: config_schema must be a BaseModel subclass, got {got}',
             )
+        if self.config is not None and not isinstance(self.config, schema):
+            expected = f'{schema.__module__}.{schema.__name__}'
+            actual = f'{type(self.config).__module__}.{type(self.config).__name__}'
+            raise GenkitError(
+                status='INVALID_ARGUMENT',
+                message=f'{self.name}: config must be an instance of {expected}, got {actual}',
+            )
+        # If info is present, validate that it is a ModelInfo and raise an error if not.
+        if self.info is not None and not isinstance(self.info, ModelInfo):
+            actual = f'{type(self.info).__module__}.{type(self.info).__name__}'
+            raise GenkitError(
+                status='INVALID_ARGUMENT',
+                message=(f'{self.name}: info must be an instance of {ModelInfo.__module__}.ModelInfo, got {actual}'),
+            )
+        # Callers often keep the config/info they passed in. Copy so later
+        # mutations of those objects don't change the ref's defaults.
+        if self.config is not None:
+            object.__setattr__(self, 'config', self.config.model_copy(deep=True))
+        if self.info is not None:
+            object.__setattr__(self, 'info', self.info.model_copy(deep=True))
 
 
 class Message(MessageData):

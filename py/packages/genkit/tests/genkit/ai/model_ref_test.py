@@ -36,7 +36,8 @@ def test_model_ref_with_custom_pydantic_schema() -> None:
     assert isinstance(ref, ModelRef)
     assert ref.name == 'googleai/gemini-pro-latest'
     assert ref.config_schema is CustomConfig
-    assert ref.config is config
+    assert ref.config is not config
+    assert ref.config == config
     assert ref.config is not None
     assert ref.config.temperature == 0.7
     assert ref.config.top_p == 0.9
@@ -116,8 +117,33 @@ def test_model_ref_is_unhashable() -> None:
 
 def test_model_ref_invalid_config_type_raises() -> None:
     """ModelRef raises GenkitError(INVALID_ARGUMENT) when config is not an instance of config_schema."""
-    with pytest.raises(GenkitError, match='config must be an instance of CustomConfig'):
+    expected = f'm1: config must be an instance of {CustomConfig.__module__}.CustomConfig, got builtins.dict'
+    with pytest.raises(GenkitError, match=expected):
         model_ref('m1', config_schema=CustomConfig, config={'temperature': 0.7})  # type: ignore[arg-type]
+
+
+def test_model_ref_invalid_config_schema_raises() -> None:
+    """ModelRef raises GenkitError when config_schema is not a BaseModel subclass."""
+    expected = 'm1: config_schema must be a BaseModel subclass, got builtins.dict'
+    with pytest.raises(GenkitError, match=expected):
+        model_ref('m1', config_schema={'type': 'object'})  # type: ignore[arg-type]
+
+
+def test_model_ref_invalid_config_schema_does_not_leak_isinstance() -> None:
+    """A dict schema fails as config_schema, not as isinstance() arg 2."""
+    with pytest.raises(GenkitError, match='config_schema must be a BaseModel subclass'):
+        model_ref(
+            'm1',
+            config_schema={'type': 'object'},  # type: ignore[arg-type]
+            config=CustomConfig(temperature=0.7),
+        )
+
+
+def test_model_ref_invalid_info_type_raises() -> None:
+    """ModelRef raises GenkitError when info is a dict instead of ModelInfo."""
+    expected = f'm1: info must be an instance of {ModelInfo.__module__}.ModelInfo, got builtins.dict'
+    with pytest.raises(GenkitError, match=expected):
+        model_ref('m1', config_schema=CustomConfig, info={'not': 'a ModelInfo'})  # type: ignore[arg-type]
 
 
 def test_model_ref_preserves_version_and_info_metadata() -> None:
@@ -133,7 +159,8 @@ def test_model_ref_preserves_version_and_info_metadata() -> None:
 
     assert ref.name == 'googleai/veo-2'
     assert ref.version == '001'
-    assert ref.info is info
+    assert ref.info is not info
+    assert ref.info == info
     assert ref.info is not None
     assert ref.info.supports is not None
     assert ref.info.supports.multiturn is True
@@ -153,3 +180,25 @@ def test_model_config_dict_accepts_common_knobs() -> None:
 
     assert config['temperature'] == 0.5
     assert config['max_output_tokens'] == 256
+
+
+def test_model_ref_isolates_caller_config_and_info() -> None:
+    """Mutating the caller's config or info after construction does not change the ref."""
+    config = CustomConfig(temperature=0.5, safety_settings={'HARM': 'BLOCK_NONE'})
+    info = ModelInfo(label='before', supports=Supports(multiturn=True))
+    ref = model_ref('m1', config_schema=CustomConfig, config=config, info=info)
+
+    config.temperature = 0.9
+    assert config.safety_settings is not None
+    config.safety_settings['HARM'] = 'BLOCK_ALL'
+    info.label = 'after'
+    assert info.supports is not None
+    info.supports.multiturn = False
+
+    assert ref.config is not None
+    assert ref.config.temperature == 0.5
+    assert ref.config.safety_settings == {'HARM': 'BLOCK_NONE'}
+    assert ref.info is not None
+    assert ref.info.label == 'before'
+    assert ref.info.supports is not None
+    assert ref.info.supports.multiturn is True
