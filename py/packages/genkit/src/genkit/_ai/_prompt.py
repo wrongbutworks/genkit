@@ -50,6 +50,7 @@ from genkit._ai._model import (
     ModelResponseChunk,
     normalize_config,
     resolve_call_model,
+    resolve_model_name,
 )
 from genkit._ai._tools import Tool
 from genkit._core._action import (
@@ -627,9 +628,7 @@ async def to_generate_action_options(
     options: PromptConfig,
 ) -> GenerateActionOptions:
     """Render ``PromptConfig`` into `GenerateActionOptions`."""
-    model = options.model or cast(str | None, registry.lookup_value('defaultModel', 'defaultModel'))
-    if model is None:
-        raise GenkitError(status='INVALID_ARGUMENT', message='No model configured.')
+    model = resolve_model_name(model=options.model, registry=registry)
 
     ri: dict[str, Any] = {}
     cache = PromptCache()
